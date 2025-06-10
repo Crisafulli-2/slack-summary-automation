@@ -1,49 +1,58 @@
 import os
-import json
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class GoogleSheetsClient:
     def __init__(self):
-        # Load credentials from file
-        creds_file = os.getenv("GOOGLE_CREDENTIALS_FILE")
+        creds_file = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
         credentials = Credentials.from_service_account_file(
             creds_file,
             scopes=['https://www.googleapis.com/auth/spreadsheets']
         )
         
         self.service = build('sheets', 'v4', credentials=credentials)
-        self.sheet_id = os.getenv("GOOGLE_SHEET_ID")
-        print(f"✅ Connected to Google Sheets: {self.sheet_id}")
     
-    def write_slack_summary(self, summary_data, cell_range="'Slack Summary'!A1"):
-        """Write Slack channel summary to Google Sheets"""
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        formatted_data = f"Slack Channel Summary - {timestamp}\n{summary_data}"
-        
-        body = {'values': [[formatted_data]]}
-        result = self.service.spreadsheets().values().update(
-            spreadsheetId=self.sheet_id,
-            range=cell_range,  # Use 'Slack Summary'!A1
-            valueInputOption='RAW',
-            body=body
-        ).execute()
-        
-        print(f"✅ Wrote to {cell_range}: {formatted_data}")
-        return result
+    def test_connection(self, sheet_id):
+        """Test connection to Google Sheets"""
+        try:
+            sheet_metadata = self.service.spreadsheets().get(spreadsheetId=sheet_id).execute()
+            title = sheet_metadata.get('properties', {}).get('title', 'Unknown')
+            print(f"✅ Successfully connected to sheet: {title}")
+            return True
+        except Exception as e:
+            print(f"❌ Google Sheets connection failed: {e}")
+            return False
     
-    def append_message_log(self, user, message, timestamp):
-        """Append a message log to the sheet"""
-        row_data = [[timestamp, user, message]]
-        
-        body = {'values': row_data}
-        result = self.service.spreadsheets().values().append(
-            spreadsheetId=self.sheet_id,
-            range="'Slack Summary'!A:C",  # Use 'Slack Summary'!A:C
-            valueInputOption='RAW',
-            body=body
-        ).execute()
-        
-        print(f"✅ Appended row: {row_data[0]}")
-        return result
+    def write_data(self, sheet_id, cell_range, data):
+        """Write data to a specific cell range"""
+        try:
+            body = {'values': [[data]]}
+            result = self.service.spreadsheets().values().update(
+                spreadsheetId=sheet_id,
+                range=cell_range,
+                valueInputOption='RAW',
+                body=body
+            ).execute()
+            
+            print(f"✅ Wrote data to {cell_range}")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to write data: {e}")
+            return False
+    
+    def clear_sheet(self, sheet_id, range_name="A:Z"):
+        """Clear data from a sheet range"""
+        try:
+            result = self.service.spreadsheets().values().clear(
+                spreadsheetId=sheet_id,
+                range=range_name
+            ).execute()
+            print(f"✅ Cleared range {range_name}")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to clear sheet: {e}")
+            return False
