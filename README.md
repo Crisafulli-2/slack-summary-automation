@@ -1,30 +1,73 @@
+
 # Slack to Google Sheets Integration
 
-Automated system to generate daily channel summaries from Slack and write them to Google Sheets.
+**Automated system to extract Slack channel messages and summaries using the Slack API, and save them to Google Sheets.**
 
-## Features
+## ✅ CURRENT SCRIPTS & FUNCTIONS
 
-✅ **Channel Summary Generation**
-- Reads messages from Slack channels (last 24 hours)
-- Generates intelligent conversation overviews
-- Extracts @mentioned users with real usernames
-- Multi-timezone support (UTC/ET/PT)
-- Activity level assessment
+- **`simple_slack_api_recap.py`**: Lists all public Slack channels and prints the last 5 messages from the first channel, showing timestamp, user display name, and message text. Uses the Slack Web API.
+- **`push_general_to_project_summary.py`**: Fetches recent messages from a Slack channel, resolves user IDs to display names, deduplicates by timestamp, and writes/updates rows in a Google Sheet (project summary tab). Adds runtime and channel link columns.
+- **`google_sheets_real.py`**: Handles Google Sheets API integration (read/write/update/clear rows).
+- **`check_bot_membership.py`**: Checks if the Slack bot is a member of a given channel.
+- **Other scripts**: (`push_env_to_sheet.py`, `quick_recap_extraction.py`) are utilities for specialized extraction or data push tasks.
 
-✅ **Google Sheets Integration**
-- Writes formatted summaries to Google Sheets
-- Automatic timestamp and metadata
+## 🚀 QUICK START
+
+1. **List channels and print last 5 messages:**
+   ```bash
+   cd src
+   python3 simple_slack_api_recap.py
+   ```
+
+2. **Push Slack messages to Google Sheets:**
+   ```bash
+   cd src
+   python3 push_general_to_project_summary.py
+   ```
+
+## SETUP
+
+- Add your Slack Bot Token to a `.env` file in the project root: `SLACK_BOT_TOKEN=...`
+- Add your Google Sheets credentials as `credentials.json` in the project root.
+
+## DATA FORMAT
+
+- **Slack message output:** Timestamp, user display name, message text (from `simple_slack_api_recap.py`)
+- **Google Sheets output:** Timestamp, channel, user, message, runtime, channel link (from `push_general_to_project_summary.py`)
+
+## STATUS
+
+
+✅ **Working** – Slack API integration, user name resolution, deduplication, and Google Sheets writing/updating are all functional.
+
+## NEXT STEPS
+
+- Look into "recap" summaries and see if those can be read
+- IF above is not true, then create slack workflow to summarize all intended channels, format it nicely, then output the summary made channel to the account tracker
+
+## 📊 EXTRACTED DATA
+
+The system extracts and saves:
+- **Date & Time**: When the data was extracted
+- **Active Channels**: Number from "X of your Y recap channels" 
+- **Total Channels**: Total channels in workspace
+- **Activity Rate**: Percentage of active channels
+- **Recap Date**: The date mentioned in the recap
+- **Delivered with Love**: Status indicator (✅/❌)
+- **Notes**: Automation metadata
 - Clean, readable format
 
 ✅ **Smart Analysis**
 - Identifies conversation topics and themes
 - Filters substantial messages from noise
 - User mention extraction and resolution
-- Professional summary formatting
+- Professional summary formatting in Slack recap style
 
 ## Quick Start
 
-### 1. Environment Setup
+### Method 1: Slack API (Traditional)
+
+#### 1. Environment Setup
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -33,22 +76,49 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-### 2. Add API Credentials
+#### 2. Add API Credentials
 Edit `.env` file:
 ```bash
 SLACK_BOT_TOKEN=xoxb-your-bot-token
 GOOGLE_CREDENTIALS_FILE=credentials.json
 ```
 
-### 3. Add Bot to Slack Channels
+#### 3. Add Bot to Slack Channels
 In any Slack channel, type:
 ```
 /invite @google_sheet_test
 ```
 
-### 4. Run Daily Summaries
+#### 4. Run Daily Summaries
 ```bash
-python src/run_daily_summaries.py
+python src/run_daily_summaries.py --method api
+```
+
+### Method 2: Web Scraping (NEW!)
+
+#### 1. Extract Browser Authentication
+```bash
+python src/extract_auth.py
+```
+
+Follow the interactive prompts to:
+1. Open Slack in your browser
+2. Use Developer Tools to copy a cURL request
+3. Extract authentication cookies automatically
+
+#### 2. Run Web Scraping
+```bash
+python src/run_daily_summaries.py --method webscrape
+# OR use the generated script:
+python src/run_web_scraping.py
+```
+
+## Benefits of Web Scraping
+
+🚀 **No Bot Setup Required** - Works immediately with your browser session
+📋 **Access All Channels** - Including private channels you're already in
+⚡ **Full Message Content** - No truncation, captures complete conversations
+🔒 **Uses Your Permissions** - Sees exactly what you can see in Slack
 ```
 
 ## Core Files
