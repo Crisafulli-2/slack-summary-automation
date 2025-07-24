@@ -35,7 +35,31 @@
 - **Slack message output:** Timestamp, user display name, message text (from `simple_slack_api_recap.py`)
 - **Google Sheets output:** Timestamp, channel, user, message, runtime, channel link (from `push_general_to_project_summary.py`)
 
-## STATUS
+
+## LOADING CREDENTIALS LOCALLY (Best Practice)
+
+Secrets like `credentials.json` and `.env` should never be committed to git. To use them locally:
+
+1. Place your `credentials.json` (Google service account) and `.env` (with `SLACK_BOT_TOKEN`, etc.) in the project root.
+2. These files are already in `.gitignore` and will not be tracked by git.
+3. All scripts will load these files automatically at runtime:
+   - Python scripts use `from dotenv import load_dotenv` to load `.env`.
+   - Google Sheets API libraries will look for `credentials.json` in the project root.
+4. To share credentials with teammates, use a secure channel (never email or commit to git).
+
+**Example .env:**
+```env
+SLACK_BOT_TOKEN=xoxb-...
+GOOGLE_SHEET_ID=...
+```
+
+**Example usage in Python:**
+```python
+from dotenv import load_dotenv
+import os
+load_dotenv()
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
+```
 
 
 ✅ **Working** – Slack API integration, user name resolution, deduplication, and Google Sheets writing/updating are all functional.
