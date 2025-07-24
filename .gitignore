@@ -1,3 +1,6 @@
+# Ignore credentials and environment files
+credentials.json
+.env
 # Python
 __pycache__/
 *.py[cod]
