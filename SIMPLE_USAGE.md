@@ -13,13 +13,13 @@ Extracts Slack channel messages using the Slack Web API and writes summaries to 
 
 ### List channels and print last 5 messages
 ```bash
-cd /Users/jcris/Projects/Slack/src
+cd Projects/Slack/src
 python3 simple_slack_api_recap.py
 ```
 
 ### Push Slack messages to Google Sheets
 ```bash
-cd /Users/jcris/Projects/Slack/src
+cd Projects/Slack/src
 python3 push_general_to_project_summary.py
 ```
 
